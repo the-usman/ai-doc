@@ -43,6 +43,14 @@ services:
       - dokploy-network
     labels:
       - traefik.docker.network=dokploy-network
+      - traefik.enable=true
+      - traefik.http.services.aidoc.loadbalancer.server.port=3000
+      # HTTPS router (fixes https 404 when Dokploy only created the http router)
+      - traefik.http.routers.aidoc-https.rule=Host(`${APP_DOMAIN}`)
+      - traefik.http.routers.aidoc-https.entrypoints=websecure
+      - traefik.http.routers.aidoc-https.tls=true
+      - traefik.http.routers.aidoc-https.tls.certresolver=${TRAEFIK_CERT_RESOLVER:-letsencrypt}
+      - traefik.http.routers.aidoc-https.service=aidoc
 
   db:
     image: pgvector/pgvector:pg16
