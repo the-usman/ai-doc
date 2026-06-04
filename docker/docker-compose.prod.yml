@@ -1,11 +1,12 @@
 # AI-Doc — Production stack (Dokploy)
 #
-# Deploy: point Dokploy at this file (docker/docker-compose.prod.yml).
-# Set Container Port to 3000 in the Dokploy UI (no host bind on 3000).
+# Domains tab (then click Redeploy — required):
+#   Service Name: app
+#   Host: aidoc.usman.talent.techsupersonic.com
+#   Container Port: 3000
+#   HTTPS: ON (Let's Encrypt) — required if you open https:// in the browser
 #
-# If you must publish a host port (port 3000 busy on server), add to .env:
-#   APP_HOST_PORT=3080
-# and uncomment the ports block below.
+# Use "Preview Compose" in Dokploy to confirm Traefik labels were injected.
 
 name: ai-doc-prod
 
@@ -16,10 +17,9 @@ services:
       context: ..
       dockerfile: Dockerfile
     restart: unless-stopped
-    expose:
+    # Dokploy convention: publish container port only (no host 3000 bind)
+    ports:
       - "3000"
-    # ports:
-    #   - "${APP_HOST_PORT:-3080}:3000"
     env_file:
       - .env
     environment:
@@ -40,6 +40,9 @@ services:
       start_period: 40s
     networks:
       - ai-doc
+      - dokploy-network
+    labels:
+      - traefik.docker.network=dokploy-network
 
   db:
     image: pgvector/pgvector:pg16
@@ -74,6 +77,8 @@ services:
 networks:
   ai-doc:
     driver: bridge
+  dokploy-network:
+    external: true
 
 volumes:
   postgres_data:

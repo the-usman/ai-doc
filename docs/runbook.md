@@ -90,7 +90,9 @@ Once deployed, visit the live URL and confirm the application is running. Test t
 
 **A Dokploy deployment succeeds but the application returns an error.** Check the application logs in the Dokploy panel. The most common cause is a missing environment variable in the secrets panel that exists locally in `.env` but was not added to production.
 
-**Dokploy deploy fails: `Bind for 0.0.0.0:3000 failed: port is already allocated`.** Another container on the server is using host port 3000. Production compose uses `expose: 3000` only (no host bind). In Dokploy, set the application **container port** to `3000`. Redeploy after pulling the latest `docker-compose.prod.yml`. If you must bind a host port, set `APP_HOST_PORT=3080` in env, uncomment the `ports` block in prod compose, and point Dokploy at host port `3080`.
+**Dokploy deploy fails: `Bind for 0.0.0.0:3000 failed: port is already allocated`.** Another container on the server is using host port 3000. Production compose uses `ports: ["3000"]` (container port only, no host bind). In Dokploy, set the application **container port** to `3000`.
+
+**Browser shows plain text `404 page not found` (not JSON).** That is Traefik, not the app — routing never reached FastAPI. Fix in order: (1) In Domains, turn **HTTPS ON** if you use `https://` in the browser (HTTPS off + https URL = 404). (2) Click **Redeploy** after every domain change. (3) Confirm `app` is on `dokploy-network` and use **Preview Compose** to see Traefik labels. (4) Open `http://your-domain/health` — should return `{"status":"ok"}`. (5) Check app container is **healthy** in Dokploy (unhealthy containers are not routed).
 
 ---
 

@@ -13,14 +13,44 @@ from app.auth_routes import router as auth_router
 from app.config import get_settings
 from app.sessions import get_active_session
 
-STATIC_DIR = Path(__file__).resolve().parent.parent.parent / "frontend" / "dist"
+
+def _resolve_static_dir() -> Path:
+    """
+    Locate the built React app (frontend/dist).
+
+    In the production Docker image files live at /app/frontend/dist.
+    When running from the backend/ folder locally, dist is at ../frontend/dist.
+
+    Returns:
+        Path to the dist directory (may not exist in dev API-only mode).
+    """
+    app_package = Path(__file__).resolve().parent
+    backend_root = app_package.parent
+    candidates = [
+        backend_root / "frontend" / "dist",
+        backend_root.parent / "frontend" / "dist",
+    ]
+    for path in candidates:
+        if path.is_dir():
+            return path
+    return candidates[0]
+
+
+STATIC_DIR = _resolve_static_dir()
 
 app = FastAPI(title="AI-Doc API", version="0.1.0")
 
 settings = get_settings()
+_cors_origins = list(
+    {
+        settings.frontend_url.rstrip("/"),
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    }
+)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.frontend_url, "http://localhost:3000"],
+    allow_origins=_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -85,29 +115,53 @@ def me(session: SessionDep) -> dict:
     }
 
 
+def _serve_index() -> FileResponse:
+    """
+    Return the SPA shell (index.html).
+
+    Returns:
+        FileResponse for index.html.
+
+    Raises:
+        HTTPException: When the frontend was not built into the image.
+    """
+    index = STATIC_DIR / "index.html"
+    if not index.is_file():
+        raise HTTPException(
+            status_code=503,
+            detail="Frontend not built. Run npm run build in frontend/ or redeploy the Docker image.",
+        )
+    return FileResponse(index)
+
+
 def _mount_frontend() -> None:
     """Serve built React assets when dist exists (production)."""
-    if STATIC_DIR.is_dir():
-        app.mount("/assets", StaticFiles(directory=STATIC_DIR / "assets"), name="assets")
+    if not STATIC_DIR.is_dir():
+        return
 
-        @app.get("/{full_path:path}")
-        def spa_fallback(full_path: str) -> FileResponse:
-            """
-            Serve index.html for client-side routes.
+    assets_dir = STATIC_DIR / "assets"
+    if assets_dir.is_dir():
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
 
-            Args:
-                full_path: Request path segment after leading slash.
+    @app.get("/")
+    def spa_root() -> FileResponse:
+        """Serve the SPA entry page."""
+        return _serve_index()
 
-            Returns:
-                index.html for SPA navigation paths.
+    @app.get("/{full_path:path}")
+    def spa_fallback(full_path: str) -> FileResponse:
+        """
+        Serve index.html for client-side routes (React Router).
 
-            Raises:
-                HTTPException: When index.html is missing.
-            """
-            index = STATIC_DIR / "index.html"
-            if index.exists():
-                return FileResponse(index)
-            raise HTTPException(status_code=404)
+        Args:
+            full_path: Path after the leading slash.
+
+        Returns:
+            index.html for non-file SPA routes.
+        """
+        if full_path.startswith("api/") or full_path == "health":
+            raise HTTPException(status_code=404, detail="Not Found")
+        return _serve_index()
 
 
 _mount_frontend()
