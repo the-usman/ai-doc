@@ -1,0 +1,116 @@
+.shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #0f1419;
+  color: #e7ecf3;
+  font-family: system-ui, sans-serif;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid #2a3544;
+  background: #151b24;
+}
+
+.brand {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.appSwitcher {
+  display: flex;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.appLink,
+.appActive {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  text-decoration: none;
+  color: #9aa8bc;
+  font-size: 0.9rem;
+}
+
+.appActive {
+  background: #243044;
+  color: #fff;
+  font-weight: 600;
+}
+
+.appIcon {
+  font-size: 1rem;
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #9aa8bc;
+}
+
+.avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+}
+
+.body {
+  display: flex;
+  flex: 1;
+}
+
+.subNav {
+  width: 200px;
+  padding: 1.25rem 1rem;
+  border-right: 1px solid #2a3544;
+  background: #121820;
+}
+
+.subNavTitle {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b7a90;
+  margin: 0 0 0.75rem;
+}
+
+.subNav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.subNav a {
+  display: block;
+  padding: 0.45rem 0.5rem;
+  color: #9aa8bc;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.subNav a:hover {
+  color: #fff;
+  background: #1c2533;
+}
+
+.subActive {
+  color: #fff !important;
+  background: #243044 !important;
+  font-weight: 600;
+}
+
+.main {
+  flex: 1;
+  padding: 2rem;
+  max-width: 900px;
+}
