@@ -21,6 +21,9 @@ os.environ.setdefault(
 os.environ.setdefault("GOOGLE_CLIENT_ID", "test-google-id")
 os.environ.setdefault("GOOGLE_CLIENT_SECRET", "test-google-secret")
 os.environ.setdefault("GOOGLE_REDIRECT_URI", "http://testserver/api/auth/callback/google")
+os.environ.setdefault("GITHUB_CLIENT_ID", "test-github-id")
+os.environ.setdefault("GITHUB_CLIENT_SECRET", "test-github-secret")
+os.environ.setdefault("GITHUB_REDIRECT_URI", "http://testserver/api/auth/callback/github")
 os.environ.setdefault("FRONTEND_URL", "http://localhost:3000")
 os.environ.setdefault("OAUTH_PROVIDER", "google")
 

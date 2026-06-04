@@ -1,19 +1,30 @@
 # AI-Doc — Production stack (Dokploy)
-# Database and Redis are not exposed to the internet.
+#
+# Deploy: point Dokploy at this file (docker/docker-compose.prod.yml).
+# Set Container Port to 3000 in the Dokploy UI (no host bind on 3000).
+#
+# If you must publish a host port (port 3000 busy on server), add to .env:
+#   APP_HOST_PORT=3080
+# and uncomment the ports block below.
+
+name: ai-doc-prod
 
 services:
   app:
-    image: ${REGISTRY_IMAGE}:${IMAGE_TAG:-latest}
+    image: ${REGISTRY_IMAGE:-ai-doc}:${IMAGE_TAG:-latest}
     build:
       context: ..
       dockerfile: Dockerfile
     restart: unless-stopped
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
+    # ports:
+    #   - "${APP_HOST_PORT:-3080}:3000"
     env_file:
       - .env
     environment:
       APP_ENV: production
+      APP_PORT: "3000"
       DB_HOST: db
       REDIS_HOST: redis
     depends_on:
@@ -22,18 +33,20 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:3000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 20s
+      start_period: 40s
+    networks:
+      - ai-doc
 
   db:
     image: pgvector/pgvector:pg16
     restart: unless-stopped
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ../schema/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ../schema/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -43,6 +56,9 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s
+    networks:
+      - ai-doc
 
   redis:
     image: redis:7-alpine
@@ -52,6 +68,12 @@ services:
       interval: 10s
       timeout: 3s
       retries: 5
+    networks:
+      - ai-doc
+
+networks:
+  ai-doc:
+    driver: bridge
 
 volumes:
   postgres_data:

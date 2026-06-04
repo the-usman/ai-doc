@@ -15,6 +15,7 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 SESSION_COOKIE = "ai_doc_session"
 STATE_COOKIE = "ai_doc_oauth_state"
+SUPPORTED_PROVIDERS = frozenset({"google", "github"})
 
 
 def _serializer(settings: Settings) -> URLSafeSerializer:
@@ -30,21 +31,53 @@ def _serializer(settings: Settings) -> URLSafeSerializer:
     return URLSafeSerializer(settings.app_secret, salt="oauth-state")
 
 
-@router.get("/login")
-async def login() -> RedirectResponse:
+def _provider_configured(settings: Settings, provider: str) -> bool:
     """
-    Start OAuth by redirecting to the configured provider.
+    Return whether OAuth client credentials exist for a provider.
 
-    Sets a signed state cookie for CSRF protection.
+    Args:
+        settings: Application settings.
+        provider: google or github.
 
     Returns:
-        Redirect to Google or GitHub authorize URL.
+        True if the provider can be used for login.
     """
-    settings = get_settings()
-    provider = settings.oauth_provider
+    if provider == "google":
+        return bool(settings.google_client_id and settings.google_client_secret)
+    if provider == "github":
+        return bool(settings.github_client_id and settings.github_client_secret)
+    return False
+
+
+def _start_oauth(settings: Settings, provider: str) -> RedirectResponse:
+    """
+    Build redirect to the provider authorize URL with CSRF state cookie.
+
+    Args:
+        settings: Client ids, secrets, and redirect URIs.
+        provider: google or github.
+
+    Returns:
+        Redirect response with signed state cookie set.
+
+    Raises:
+        HTTPException: If provider is unknown or not configured.
+    """
+    if provider not in SUPPORTED_PROVIDERS:
+        raise HTTPException(status_code=400, detail="Unsupported OAuth provider")
+    if not _provider_configured(settings, provider):
+        raise HTTPException(
+            status_code=503,
+            detail=f"{provider.title()} OAuth is not configured on this server",
+        )
+
     state = secrets.token_urlsafe(16)
     signed = _serializer(settings).dumps({"state": state, "provider": provider})
-    url = build_authorize_url(settings, provider, state)
+    try:
+        url = build_authorize_url(settings, provider, state)
+    except ValueError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+
     response = RedirectResponse(url, status_code=302)
     response.set_cookie(
         STATE_COOKIE,
@@ -55,6 +88,49 @@ async def login() -> RedirectResponse:
         secure=settings.app_env == "production",
     )
     return response
+
+
+@router.get("/providers")
+def list_providers() -> dict[str, list[str]]:
+    """
+    List OAuth providers that have credentials configured.
+
+    Returns:
+        JSON object with provider keys enabled for sign-in.
+    """
+    settings = get_settings()
+    enabled = [
+        p for p in sorted(SUPPORTED_PROVIDERS) if _provider_configured(settings, p)
+    ]
+    return {"providers": enabled}
+
+
+@router.get("/login")
+async def login_default() -> RedirectResponse:
+    """
+    Start OAuth with the default provider (Google).
+
+    Returns:
+        Redirect to Google authorize URL.
+    """
+    settings = get_settings()
+    default = settings.oauth_provider if settings.oauth_provider in SUPPORTED_PROVIDERS else "google"
+    return _start_oauth(settings, default)
+
+
+@router.get("/login/{provider}")
+async def login_provider(provider: str) -> RedirectResponse:
+    """
+    Start OAuth for a specific provider.
+
+    Args:
+        provider: google or github.
+
+    Returns:
+        Redirect to that provider's authorize URL.
+    """
+    settings = get_settings()
+    return _start_oauth(settings, provider)
 
 
 @router.get("/callback/{provider}")
@@ -77,6 +153,9 @@ async def oauth_callback(
     Returns:
         Redirect to frontend home with session cookie, or HTTP 400 on failure.
     """
+    if provider not in SUPPORTED_PROVIDERS:
+        raise HTTPException(status_code=400, detail="Unsupported OAuth provider")
+
     settings = get_settings()
 
     if error or not code or not state:

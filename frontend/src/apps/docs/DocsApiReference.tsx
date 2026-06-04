@@ -22,8 +22,18 @@ export function DocsApiReference() {
           </tr>
           <tr>
             <td>GET</td>
-            <td>/api/auth/login</td>
-            <td>Start OAuth flow</td>
+            <td>/api/auth/providers</td>
+            <td>Enabled OAuth providers (google, github)</td>
+          </tr>
+          <tr>
+            <td>GET</td>
+            <td>/api/auth/login/google</td>
+            <td>Start Google OAuth</td>
+          </tr>
+          <tr>
+            <td>GET</td>
+            <td>/api/auth/login/github</td>
+            <td>Start GitHub OAuth</td>
           </tr>
           <tr>
             <td>GET</td>

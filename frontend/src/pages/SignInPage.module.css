@@ -26,16 +26,41 @@
   margin-bottom: 1.5rem;
 }
 
-.button {
-  background: #3b82f6;
+.buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.hint {
+  color: #9aa8bc;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.button,
+.buttonGithub {
   color: #fff;
   border: none;
   padding: 0.65rem 1.25rem;
   border-radius: 8px;
   font-size: 1rem;
   cursor: pointer;
+  width: 100%;
+}
+
+.button {
+  background: #3b82f6;
 }
 
 .button:hover {
   background: #2563eb;
+}
+
+.buttonGithub {
+  background: #24292f;
+}
+
+.buttonGithub:hover {
+  background: #1b1f23;
 }
