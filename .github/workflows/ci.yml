@@ -1,92 +1,52 @@
-# DevAI-Doc — CI/CD Pipeline
-#
-# This workflow runs on every push to any branch and on every pull request
-# targeting main. It is the quality gate that ensures no broken code reaches
-# the main branch.
-#
-# A pull request cannot be merged unless this pipeline passes.
-# This is enforced by the branch protection rule on main — not by convention.
-#
-# Pipeline stages (run in sequence, fail fast):
-#   1. Lint    — static analysis, catches style and obvious errors
-#   2. Test    — unit and integration tests against a real database
-#   3. Build   — confirms the Docker image can be built successfully
-#   4. Schema  — validates schema.sql syntax against the postgres dialect
-#
-# The eval harness (Phase 5) is a separate on-demand workflow.
-# It is not run here because each eval invocation makes real LLM API calls,
-# which adds cost and latency inappropriate for every push.
-
 name: CI
 
 on:
   push:
     branches:
-      - "**"                           # every branch, every push
+      - "**"
   pull_request:
     branches:
-      - main                           # PRs targeting main
+      - main
 
 jobs:
-
-  # ---------------------------------------------------------------------------
-  # Job 1 — Lint
-  # ---------------------------------------------------------------------------
-  # Catches style issues, unused imports, type errors, and common mistakes
-  # before the tests run. Failing fast on lint is cheaper than failing slow
-  # on tests that could have been avoided.
   lint:
     name: Lint
     runs-on: ubuntu-latest
-
     steps:
-      - name: Check out code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      # --- Python projects: uncomment this block, delete the Node block ---
-      # - name: Set up Python
-      #   uses: actions/setup-python@v5
-      #   with:
-      #     python-version: "3.12"
-      #
-      # - name: Install dependencies
-      #   run: pip install -r requirements-dev.txt
-      #
-      # - name: Run ruff linter
-      #   run: ruff check .
-      #
-      # - name: Run ruff formatter check
-      #   run: ruff format --check .
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
-      # --- Node/TypeScript projects: uncomment this block, delete the Python block ---
-      # - name: Set up Node
-      #   uses: actions/setup-node@v4
-      #   with:
-      #     node-version: "20"
-      #     cache: "npm"
-      #
-      # - name: Install dependencies
-      #   run: npm ci
-      #
-      # - name: Run ESLint
-      #   run: npm run lint
-      #
-      # - name: Run Prettier check
-      #   run: npm run format:check
+      - name: Install Python lint dependencies
+        run: pip install ruff
+        working-directory: backend
 
-  # ---------------------------------------------------------------------------
-  # Job 2 — Test
-  # ---------------------------------------------------------------------------
-  # Runs the full test suite against a real PostgreSQL database spun up as a
-  # service container. Tests run against the same database engine used in
-  # production — not SQLite, not mocks, a real Postgres instance.
-  #
-  # Using pgvector/pgvector:pg16 so vector extension tests work in CI
-  # with the same image used locally and in production.
+      - name: Run ruff
+        run: ruff check .
+        working-directory: backend
+
+      - name: Run ruff format check
+        run: ruff format --check .
+        working-directory: backend
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install frontend dependencies
+        run: npm install
+        working-directory: frontend
+
+      - name: Run ESLint
+        run: npm run lint
+        working-directory: frontend
+
   test:
     name: Test
     runs-on: ubuntu-latest
-    needs: lint                        # only run if lint passes
+    needs: lint
 
     services:
       db:
@@ -114,21 +74,23 @@ jobs:
           --health-retries 5
 
     env:
-      # Test environment variables — real values, but for the CI database only.
-      # Never put production secrets in CI environment variables without using
-      # GitHub Secrets (secrets.YOUR_SECRET_NAME syntax).
       DB_HOST: localhost
       DB_PORT: 5432
       DB_NAME: ai_doc_test
       DB_USER: test_user
       DB_PASSWORD: test_password
+      DATABASE_URL: postgresql://test_user:test_password@localhost:5432/ai_doc_test
       REDIS_HOST: localhost
       REDIS_PORT: 6379
       APP_ENV: test
+      APP_SECRET: ci-test-secret-minimum-32-characters-long
+      GOOGLE_CLIENT_ID: test-id
+      GOOGLE_CLIENT_SECRET: test-secret
+      GOOGLE_REDIRECT_URI: http://testserver/api/auth/callback/google
+      FRONTEND_URL: http://localhost:3000
 
     steps:
-      - name: Check out code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Apply database schema
         run: |
@@ -137,72 +99,46 @@ jobs:
             -U test_user -d ai_doc_test \
             -f schema/schema.sql
 
-      # --- Python projects ---
-      # - name: Set up Python
-      #   uses: actions/setup-python@v5
-      #   with:
-      #     python-version: "3.12"
-      #
-      # - name: Install dependencies
-      #   run: pip install -r requirements-dev.txt
-      #
-      # - name: Run tests
-      #   run: pytest --tb=short
-
-      # --- Node/TypeScript projects ---
-      # - name: Set up Node
-      #   uses: actions/setup-node@v4
-      #   with:
-      #     node-version: "20"
-      #     cache: "npm"
-      #
-      # - name: Install dependencies
-      #   run: npm ci
-      #
-      # - name: Run tests
-      #   run: npm test
-
-  # ---------------------------------------------------------------------------
-  # Job 3 — Build
-  # ---------------------------------------------------------------------------
-  # Confirms the Docker image builds successfully. A build that passes locally
-  # but fails in CI usually means a missing file in .dockerignore, a hardcoded
-  # local path, or a dependency that was installed globally on the developer's
-  # machine but not declared in the project.
-  build:
-    name: Build Docker image
-    runs-on: ubuntu-latest
-    needs: test                        # only build if tests pass
-
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v4
-
-      - name: Build Docker image
-        run: docker build -t ai-doc:ci .
-
-  # ---------------------------------------------------------------------------
-  # Job 4 — Schema validation
-  # ---------------------------------------------------------------------------
-  # Lints schema/schema.sql using sqlfluff against the postgres dialect.
-  # Catches syntax errors, inconsistent style, and reserved word misuse before
-  # they reach the database. Runs in parallel with the other jobs because it
-  # has no dependencies.
-  schema:
-    name: Validate SQL schema
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v4
-
-      - name: Set up Python for sqlfluff
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Install sqlfluff
-        run: pip install sqlfluff
+      - name: Install backend dependencies
+        run: pip install -r requirements-dev.txt
+        working-directory: backend
 
-      - name: Lint schema.sql
-        run: sqlfluff lint schema/schema.sql --dialect postgres
+      - name: Run pytest
+        run: pytest --tb=short
+        working-directory: backend
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install frontend dependencies
+        run: npm install
+        working-directory: frontend
+
+      - name: Run frontend tests
+        run: npm test
+        working-directory: frontend
+
+  build:
+    name: Build Docker image
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build production image
+        run: docker build -t ai-doc:ci .
+
+  schema:
+    name: Validate SQL schema
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install sqlfluff
+      - run: sqlfluff lint schema/schema.sql --dialect postgres

@@ -1,28 +1,21 @@
-# DevAI-Doc — Production Stack
-#
-# Used by Dokploy to run the application in production.
-# This file is deliberately different from docker-compose.yml.
-# Read the differences and understand each one before deploying.
-#
-# Key differences from the development compose file:
-#   - Database port is NOT exposed to the internet
-#   - Source code is NOT mounted as a volume — the image is the artefact
-#   - No debug flags or hot-reload commands
-#   - Redis port is NOT exposed — only accessible within the Docker network
-#   - Restart policies are set so services recover from crashes automatically
-#
-# Environment variables are set in the Dokploy secrets panel.
-# Never put real values in this file. Never commit secrets to the repository.
+# AI-Doc — Production stack (Dokploy)
+# Database and Redis are not exposed to the internet.
 
 services:
-
   app:
-    image: ${REGISTRY_IMAGE}:${IMAGE_TAG:-latest}   # built image, not source mount
+    image: ${REGISTRY_IMAGE}:${IMAGE_TAG:-latest}
+    build:
+      context: ..
+      dockerfile: Dockerfile
     restart: unless-stopped
     ports:
-      - "3000:3000"                                 # only the app port is exposed; adjust as needed
+      - "3000:3000"
     env_file:
-      - .env                                        # Dokploy injects this from the secrets panel
+      - .env
+    environment:
+      APP_ENV: production
+      DB_HOST: db
+      REDIS_HOST: redis
     depends_on:
       db:
         condition: service_healthy
@@ -38,11 +31,9 @@ services:
   db:
     image: pgvector/pgvector:pg16
     restart: unless-stopped
-    # No ports section here — the database is NOT exposed to the internet.
-    # The app container reaches it via the service name "db" on the internal network.
-    # Exposing the database port in production is a critical security mistake.
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ../schema/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -56,7 +47,6 @@ services:
   redis:
     image: redis:7-alpine
     restart: unless-stopped
-    # No ports section — Redis is not exposed to the internet in production.
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s

@@ -22,7 +22,7 @@ Your `.env` file must exist in the project root and contain all variables listed
 
 All local development runs through Docker Compose. The following commands are run from the project root directory.
 
-To start the full stack for the first time, run `docker compose up --build`. The `--build` flag forces Docker to rebuild the images, which is necessary the first time and after any change to a Dockerfile or dependency file. On subsequent starts where nothing has changed in the image, `docker compose up` without `--build` is faster.
+To start the full stack for the first time, run `docker compose up --build` from the **repository root** (where `docker-compose.yml` lives). The `--build` flag forces Docker to rebuild the images, which is necessary the first time and after any change to a Dockerfile or dependency file. On subsequent starts where nothing has changed in the image, `docker compose up` without `--build` is faster.
 
 You will see log output from each service as it starts. The application is ready when you see the startup message from your application server — this will look different depending on your stack, but will be something like "Application startup complete" for FastAPI or "ready - started server on 0.0.0.0:3000" for Next.js.
 

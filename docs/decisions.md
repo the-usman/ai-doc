@@ -36,77 +36,41 @@ What are the known risks or tradeoffs you are accepting?
 
 ## ADR-001 — Stack choice
 
-**Date:** [Fill in when written]
-**Status:** Accepted
+**Date:** 2026-06-04  
+**Status:** Accepted  
+**Full text:** [docs/adr/001-stack-choice.md](adr/001-stack-choice.md)
 
-### Context
-[Describe what you evaluated: Next.js alone, React plus FastAPI, Vue plus FastAPI, or another combination. Describe the constraints — your existing experience, the role you are targeting, the complexity tradeoffs between a monolith and a split stack. This is your first ADR and it sets the standard for the ones that follow.]
-
-### Options considered
-[Fill in the options you genuinely evaluated.]
-
-### Decision
-[Fill in what you chose and why.]
-
-### Consequences
-[Fill in what becomes easier, what becomes harder, and what risks you are accepting.]
+React (Vite) + FastAPI with PostgreSQL. Production serves the built SPA from the API container on port 3000.
 
 ---
 
 ## ADR-002 — OAuth provider and flow design
 
-**Date:** [Fill in]
-**Status:** Accepted
+**Date:** 2026-06-04  
+**Status:** Accepted  
+**Full text:** [docs/adr/002-oauth-flow.md](adr/002-oauth-flow.md)
 
-### Context
-[Describe why you chose Google or GitHub OAuth rather than username-password authentication. Describe what the authorisation code grant type is and why the code exchange happens server-side. Describe what the state parameter does and why omitting it is a vulnerability.]
-
-### Options considered
-[Fill in]
-
-### Decision
-[Fill in]
-
-### Consequences
-[Fill in]
+Google OAuth authorization code flow with server-side token exchange and signed `state` for CSRF protection.
 
 ---
 
 ## ADR-003 — Database migration strategy
 
-**Date:** [Fill in]
-**Status:** Accepted
+**Date:** 2026-06-04  
+**Status:** Accepted  
+**Full text:** [docs/adr/003-migration-strategy.md](adr/003-migration-strategy.md)
 
-### Context
-[Describe the two primary options: a single idempotent schema.sql file using CREATE TABLE IF NOT EXISTS throughout, versus a numbered migrations folder managed by Alembic (Python) or Drizzle (TypeScript). Describe the operational difference: the idempotent file is simple and safe but loses the history of incremental changes; numbered migrations preserve history but require a migration runner and more discipline to maintain.]
-
-### Options considered
-[Fill in]
-
-### Decision
-[Fill in]
-
-### Consequences
-[Fill in]
+Idempotent `schema/schema.sql` applied via Docker init and CI `psql -f`.
 
 ---
 
 ## ADR-004 — Multi-application shell architecture
 
-**Date:** [Fill in]
-**Status:** Accepted
+**Date:** 2026-06-04  
+**Status:** Accepted  
+**Full text:** [docs/adr/004-multi-app-shell.md](adr/004-multi-app-shell.md)
 
-### Context
-[Describe the platform architecture you designed in Phase 1: the outer shell handling authentication and top-level navigation, each application owning its own sub-navigation and routes, and the single-registration-point pattern for adding new applications. Explain why this structure was chosen over a simpler single-page application or a separate deployment per tool.]
-
-### Options considered
-[Fill in]
-
-### Decision
-[Fill in]
-
-### Consequences
-[Fill in]
+Central `appRegistry.ts`; shell owns SSO and top-level navigation; apps own sub-routes under `/` and `/docs`.
 
 ---
 

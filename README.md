@@ -1,44 +1,51 @@
 # AI-Doc
 
-A personal developer platform and AI-engineering portfolio. You build this application phase by phase, each one adding a new capability to the same codebase. The platform is designed to grow without a fixed end point — new phases are added to the programme as you progress, and each phase you complete makes the next one faster because the foundation is your own work and you understand every part of it.
+A multi-application developer platform with shared single sign-on, PostgreSQL, and a React platform shell. Phase 1 delivers authentication, Docker, CI, and living documentation inside the product.
 
-## What the platform is
+## Stack
 
-AI-Doc is a multi-application platform. The outer shell handles authentication once, and every application registered inside it shares that login without any changes to the auth layer. Each application has its own navigation, its own sub-menus, and its own URL namespace. The platform grows by adding applications — you never restructure the shell to accommodate a new tool, you simply register the new one.
+- **Frontend:** React 18, Vite, TypeScript
+- **Backend:** FastAPI, psycopg
+- **Data:** PostgreSQL (pgvector image), Redis
+- **Ops:** Docker Compose, GitHub Actions, Dokploy (production)
 
-## Prerequisites
+## Run locally
 
-| Tool | Link | Required from |
-|---|---|---|
-| Git | git-scm.com | Phase 1 |
-| GitHub account | github.com | Phase 1 |
-| Docker Desktop | docker.com | Phase 1 |
-| pgAdmin | pgadmin.org | Phase 1 |
-| Dokploy access | TSS server | Phase 1 |
-| Claude.ai | claude.ai | Phase 1 |
-| n8n | n8n.io | Phase 3 |
+1. Copy `.env.example` to `.env` and set database credentials plus Google OAuth values.
+2. Register OAuth redirect URI: `http://localhost:3000/api/auth/callback/google`
+3. From the project root:
 
-## How to begin
-
-Read `00-overview.md` completely before touching anything else. It explains the mindset, the SDLC discipline, and the AI-Driven Development protocol that every phase assumes you have absorbed. Resources who skip it consistently get stuck in Phase 1 for the wrong reasons.
-
-## Current phases
-
-```
-01-phase-1-foundations.md     Weeks 1–2   Platform shell, SSO, database, Docker, CI/CD
-02-phase-2-langchain.md       Weeks 3–5   LangChain core, LCEL, chatbot, tools, LangServe
-03-phase-3-agents.md          Weeks 5–7   LangGraph, multi-agent, supervisor pattern, n8n
-04-phase-4-rag.md             Weeks 7–9   LangChain retrieval, pgvector, RAG, Redis memory
-05-phase-5-production.md      Weeks 9–10  LangSmith, OWASP, evals, case study, presentation
+```bash
+docker compose up --build
 ```
 
-New phases are added here as the programme grows. Each extends the same codebase — nothing already built is discarded.
+4. Open [http://localhost:3000](http://localhost:3000) and sign in.
 
-## Tech stack
+API only (no UI): [http://localhost:8000/health](http://localhost:8000/health)
 
-PostgreSQL · pgvector · Redis · Docker · GitHub Actions · FastAPI or Next.js · LangChain · LangGraph · LangServe · LangSmith · Claude API or OpenAI API
+## Tests
 
----
+```bash
+docker compose run --rm api pytest
+docker compose run --rm web npm test
+```
 
-*AI-Doc — TSS Developer Training Programme*
-*Version 1.0 — May 2026*
+## Deploy
+
+Use `docker/docker-compose.prod.yml` in Dokploy with secrets from the panel. Build image from root `Dockerfile`.
+
+## Documentation
+
+- Programme overview: `00-overview.md`
+- Phase guides: `01-phase-1-foundations.md`, …
+- ADRs: `docs/adr/`
+- In-app Docs application: Architecture, Decisions, Runbook
+
+## Platform applications (Phase 1)
+
+| App  | Path    | Sub-pages                          |
+|------|---------|------------------------------------|
+| Home | `/`     | Overview, Settings               |
+| Docs | `/docs` | Architecture, Decisions, Runbook, API Reference |
+
+Register new apps in `frontend/src/platform/appRegistry.ts`.

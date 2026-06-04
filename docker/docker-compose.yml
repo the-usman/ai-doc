@@ -1,13 +1,6 @@
-# DevAI-Doc — Local Development Stack
-#
-# Runs the full stack locally with hot-reload and direct database access.
-# Start with: docker compose up --build
-# Stop with:  docker compose down
-# Wipe data:  docker compose down -v
-#
-# IMPORTANT: this file is for local development only.
-# Never use this file to deploy to production.
-# Production runs from docker-compose.prod.yml.
+# Deprecated: use docker-compose.yml at the project root.
+# Local: docker compose up --build
+# Production: docker/docker-compose.prod.yml
 
 services:
 
