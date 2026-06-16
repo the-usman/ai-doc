@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import type { UserProfile } from "./api/client";
-import { fetchCurrentUser } from "./api/client";
+import { fetchCurrentUser, logout } from "./api/client";
 import { HomeOverview } from "./apps/home/HomeOverview";
 import { HomeSettings } from "./apps/home/HomeSettings";
+import { ChatConversation } from "./apps/chat/ChatConversation";
+import { ChatHistory } from "./apps/chat/ChatHistory";
+import { ChatSettings } from "./apps/chat/ChatSettings";
 import { DocsApiReference } from "./apps/docs/DocsApiReference";
 import { DocsArchitecture } from "./apps/docs/DocsArchitecture";
 import { DocsDecisions } from "./apps/docs/DocsDecisions";
@@ -25,6 +28,11 @@ export default function App() {
       .finally(() => setLoading(false));
   }, []);
 
+  async function handleSignOut() {
+    await logout().catch(() => undefined);
+    setUser(null);
+  }
+
   if (loading) {
     return <div className="loading">Loading…</div>;
   }
@@ -39,7 +47,7 @@ export default function App() {
         path="/*"
         element={
           user ? (
-            <PlatformShell user={user} />
+            <PlatformShell user={user} onSignOut={handleSignOut} />
           ) : (
             <Navigate to="/sign-in" replace />
           )
@@ -47,6 +55,9 @@ export default function App() {
       >
         <Route index element={<HomeOverview />} />
         <Route path="settings" element={<HomeSettings user={user!} />} />
+        <Route path="chat" element={<ChatConversation />} />
+        <Route path="chat/history" element={<ChatHistory />} />
+        <Route path="chat/settings" element={<ChatSettings />} />
         <Route path="docs" element={<DocsArchitecture />} />
         <Route path="docs/decisions" element={<DocsDecisions />} />
         <Route path="docs/runbook" element={<DocsRunbook />} />

@@ -91,6 +91,7 @@ jobs:
       GITHUB_CLIENT_SECRET: test-github-secret
       GITHUB_REDIRECT_URI: http://testserver/api/auth/callback/github
       FRONTEND_URL: http://localhost:3000
+      ANTHROPIC_API_KEY: test-anthropic-key
 
     steps:
       - uses: actions/checkout@v4

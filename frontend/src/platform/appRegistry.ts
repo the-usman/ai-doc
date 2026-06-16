@@ -36,6 +36,17 @@ export const APP_REGISTRY: PlatformApp[] = [
     ],
   },
   {
+    key: "chat",
+    name: "Chat",
+    icon: "💬",
+    rootPath: "/chat",
+    subNav: [
+      { path: "", label: "Conversation" },
+      { path: "history", label: "History" },
+      { path: "settings", label: "Settings" },
+    ],
+  },
+  {
     key: "docs",
     name: "Docs",
     icon: "📚",

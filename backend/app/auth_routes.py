@@ -99,9 +99,7 @@ def list_providers() -> dict[str, list[str]]:
         JSON object with provider keys enabled for sign-in.
     """
     settings = get_settings()
-    enabled = [
-        p for p in sorted(SUPPORTED_PROVIDERS) if _provider_configured(settings, p)
-    ]
+    enabled = [p for p in sorted(SUPPORTED_PROVIDERS) if _provider_configured(settings, p)]
     return {"providers": enabled}
 
 
@@ -114,7 +112,9 @@ async def login_default() -> RedirectResponse:
         Redirect to Google authorize URL.
     """
     settings = get_settings()
-    default = settings.oauth_provider if settings.oauth_provider in SUPPORTED_PROVIDERS else "google"
+    default = (
+        settings.oauth_provider if settings.oauth_provider in SUPPORTED_PROVIDERS else "google"
+    )
     return _start_oauth(settings, default)
 
 

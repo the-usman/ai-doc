@@ -1,5 +1,6 @@
 """FastAPI application entrypoint."""
 
+import logging
 from pathlib import Path
 from typing import Annotated
 
@@ -57,6 +58,35 @@ app.add_middleware(
 )
 
 app.include_router(auth_router)
+
+
+def _register_chat() -> bool:
+    """
+    Wire up the Phase 2 chat application if its dependencies are installed.
+
+    The LangChain stack is an optional, heavy dependency set. Guarding the
+    import keeps the rest of the API (auth, health) serving even when the chat
+    extras are not present.
+
+    Returns:
+        True if the chat routes were registered.
+
+    Side effects:
+        Includes the chat router and mounts the LangServe routes on the app.
+    """
+    try:
+        from app.chat.routes import register_langserve
+        from app.chat.routes import router as chat_router
+
+        app.include_router(chat_router)
+        register_langserve(app)
+        return True
+    except Exception as exc:  # pragma: no cover - optional dependency path
+        logging.getLogger(__name__).warning("Chat application unavailable: %s", exc)
+        return False
+
+
+CHAT_ENABLED = _register_chat()
 
 
 @app.get("/health")
@@ -129,7 +159,10 @@ def _serve_index() -> FileResponse:
     if not index.is_file():
         raise HTTPException(
             status_code=503,
-            detail="Frontend not built. Run npm run build in frontend/ or redeploy the Docker image.",
+            detail=(
+                "Frontend not built. Run npm run build in frontend/ or "
+                "redeploy the Docker image."
+            ),
         )
     return FileResponse(index)
 

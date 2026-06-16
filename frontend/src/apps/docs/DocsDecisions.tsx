@@ -24,6 +24,12 @@ export function DocsDecisions() {
       title: "Multi-application shell",
       summary: "Central app registry; shell owns auth and top-level navigation.",
     },
+    {
+      id: "ADR-005",
+      title: "LangChain chat architecture",
+      summary:
+        "LCEL chain with structured output; bound database tools; sliding-window memory keyed by session; served via LangServe; tools also exposed over MCP.",
+    },
   ];
 
   return (

@@ -22,7 +22,7 @@ export function HomeOverview() {
         ))}
       </ul>
       <p className="muted">
-        Chat, Agents, and Knowledge applications arrive in Phases 2–4.
+        Agents and Knowledge applications arrive in Phases 3–4.
       </p>
     </article>
   );

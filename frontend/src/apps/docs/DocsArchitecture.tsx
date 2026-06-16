@@ -17,12 +17,15 @@ export function DocsArchitecture() {
 │  • Per-app sub-navigation                    │
 ├─────────────────────────────────────────────┤
 │  Applications                                │
-│  Home (/), Docs (/docs), Chat, Agents, …   │
+│  Home (/), Chat (/chat), Docs (/docs), …    │
 ├─────────────────────────────────────────────┤
 │  API (FastAPI)                               │
-│  OAuth · sessions · health                   │
+│  OAuth · sessions · health · chat            │
+│  LangChain (LCEL) + LangServe + tools        │
 ├─────────────────────────────────────────────┤
-│  PostgreSQL (users, sessions) + Redis        │
+│  MCP server (tool manifest + call) ──┐       │
+├──────────────────────────────────────┼──────┤
+│  PostgreSQL (users, sessions) + Redis ◀┘     │
 └─────────────────────────────────────────────┘`}</pre>
       <h2>Components</h2>
       <ul>
@@ -41,7 +44,29 @@ export function DocsArchitecture() {
         <li>
           <strong>Redis</strong> — Reserved for conversational memory (Phase 4+).
         </li>
+        <li>
+          <strong>Chat</strong> — A LangChain (LCEL) chain served via LangServe.
+          It binds database-backed tools, keeps a per-session memory window, and
+          returns structured answers.
+        </li>
       </ul>
+
+      <h2>What is MCP?</h2>
+      <p>
+        The <strong>Model Context Protocol (MCP)</strong> is a shared standard
+        for how AI assistants discover and call external tools. Instead of every
+        assistant learning a bespoke way to reach each tool, an MCP server
+        publishes a <em>manifest</em> describing the tools it offers, and clients
+        call them through one consistent interface.
+      </p>
+      <p>
+        Our MCP server runs as its own service and exposes the platform's two
+        database tools — the current user count and recent sign-ins. The chat
+        assistant uses these tools today; from Phase 3, autonomous agents will
+        reach the same tools through MCP. Standardising on MCP now means each new
+        capability we add becomes available to every future client without custom
+        wiring.
+      </p>
     </article>
   );
 }

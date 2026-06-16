@@ -33,6 +33,19 @@ class Settings(BaseSettings):
 
     oauth_provider: str = "google"
 
+    # Phase 2 — LangChain chat application
+    anthropic_api_key: str = ""
+    chat_model: str = "claude-opus-4-8"
+    chat_max_tokens: int = 4096
+    chat_system_prompt: str = (
+        "You are AI-Doc's assistant, embedded in a developer platform. "
+        "Answer questions about the platform clearly and concisely. "
+        "When a question is about platform data — user counts or recent "
+        "sign-ins — use the available tools rather than guessing, and base "
+        "your answer on the tool results."
+    )
+    mcp_url: str = "http://localhost:8001"
+
     @property
     def dsn(self) -> str:
         """

@@ -74,15 +74,29 @@
   line-height: 1;
 }
 
+.userMenu {
+  position: relative;
+}
+
 .user {
   display: flex;
   align-items: center;
   gap: 0.55rem;
   font-size: 0.85rem;
+  font-family: inherit;
   color: var(--text-muted);
-  padding: 0.25rem 0.5rem 0.25rem 0.25rem;
+  padding: 0.25rem 0.6rem 0.25rem 0.25rem;
   border-radius: 999px;
   border: 1px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  transition: background var(--ease), border-color var(--ease), color var(--ease);
+}
+
+.user:hover {
+  color: var(--text);
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
 }
 
 .avatar {
@@ -90,6 +104,76 @@
   height: 28px;
   border-radius: 50%;
   border: 1px solid var(--border-strong);
+}
+
+.chevron {
+  font-size: 0.7rem;
+  opacity: 0.7;
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  min-width: 220px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  padding: 0.4rem;
+  z-index: 20;
+  animation: menu-in 0.14s var(--ease);
+}
+
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.menuHeader {
+  padding: 0.5rem 0.65rem 0.65rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0.4rem;
+}
+
+.menuName {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.menuEmail {
+  font-size: 0.8rem;
+  color: var(--text-subtle);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.signOut {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem 0.65rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background var(--ease), color var(--ease);
+}
+
+.signOut:hover {
+  background: rgba(239, 68, 68, 0.12);
+  color: #f87171;
 }
 
 .body {

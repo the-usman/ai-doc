@@ -26,6 +26,9 @@ os.environ.setdefault("GITHUB_CLIENT_SECRET", "test-github-secret")
 os.environ.setdefault("GITHUB_REDIRECT_URI", "http://testserver/api/auth/callback/github")
 os.environ.setdefault("FRONTEND_URL", "http://localhost:3000")
 os.environ.setdefault("OAUTH_PROVIDER", "google")
+# Phase 2 chat: a placeholder key so settings load; tests patch the model
+# factories and never make a real Anthropic call.
+os.environ.setdefault("ANTHROPIC_API_KEY", "test-anthropic-key")
 
 from app.config import get_settings  # noqa: E402
 from app.main import app  # noqa: E402
