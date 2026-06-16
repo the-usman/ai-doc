@@ -1,0 +1,111 @@
+/**
+ * Global design tokens, reset, and base typography for the platform.
+ * Imported once in main.tsx so every app inherits a consistent system.
+ */
+
+:root {
+  /* Surfaces */
+  --bg: #0d1117;
+  --bg-elevated: #151b24;
+  --bg-panel: #121820;
+  --bg-hover: #1c2533;
+  --bg-active: #233149;
+
+  /* Borders & lines */
+  --border: #232c3a;
+  --border-strong: #2f3b4d;
+
+  /* Text */
+  --text: #e7ecf3;
+  --text-muted: #9aa8bc;
+  --text-subtle: #6b7a90;
+
+  /* Brand / accent */
+  --accent: #4f8cff;
+  --accent-hover: #3b78f0;
+  --accent-soft: rgba(79, 140, 255, 0.14);
+  --accent-ring: rgba(79, 140, 255, 0.45);
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 18px 48px rgba(0, 0, 0, 0.45);
+
+  /* Motion */
+  --ease: 160ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  color-scheme: dark;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.55;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--accent-hover);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+::selection {
+  background: var(--accent-soft);
+}
+
+/* Custom scrollbars for a less default feel */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}

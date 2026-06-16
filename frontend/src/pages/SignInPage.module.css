@@ -3,64 +3,118 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(160deg, #0f1419 0%, #1a2740 100%);
-  color: #e7ecf3;
-  font-family: system-ui, sans-serif;
+  padding: 1.5rem;
+  background:
+    radial-gradient(1200px 600px at 70% -10%, rgba(79, 140, 255, 0.18), transparent 60%),
+    radial-gradient(900px 500px at 10% 110%, rgba(123, 92, 255, 0.16), transparent 55%),
+    var(--bg);
+  color: var(--text);
 }
 
 .card {
+  position: relative;
   text-align: center;
-  padding: 2.5rem;
-  border: 1px solid #2a3544;
-  border-radius: 12px;
-  background: #151b24;
-  max-width: 360px;
+  padding: 2.75rem 2.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, rgba(28, 36, 49, 0.7), var(--bg-elevated));
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 380px;
+  animation: rise 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.logo {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 1.1rem;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--accent) 0%, #7b5cff 100%);
+  box-shadow: 0 8px 24px rgba(79, 140, 255, 0.35);
 }
 
 .card h1 {
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.4rem;
+  font-size: 1.6rem;
 }
 
 .card p {
-  color: #9aa8bc;
-  margin-bottom: 1.5rem;
+  color: var(--text-muted);
+  margin: 0 0 1.75rem;
+  font-size: 0.95rem;
 }
 
 .buttons {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.7rem;
 }
 
 .hint {
-  color: #9aa8bc;
+  color: var(--text-muted);
   font-size: 0.9rem;
-  margin: 0;
+  margin: 0 !important;
 }
 
 .button,
 .buttonGithub {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
   color: #fff;
-  border: none;
-  padding: 0.65rem 1.25rem;
-  border-radius: 8px;
-  font-size: 1rem;
+  border: 1px solid transparent;
+  padding: 0.7rem 1.25rem;
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: inherit;
   cursor: pointer;
   width: 100%;
+  transition: background var(--ease), border-color var(--ease), transform var(--ease);
+}
+
+.button:active,
+.buttonGithub:active {
+  transform: translateY(1px);
 }
 
 .button {
-  background: #3b82f6;
+  background: #fff;
+  color: #1f2328;
 }
 
 .button:hover {
-  background: #2563eb;
+  background: #eceef1;
 }
 
 .buttonGithub {
-  background: #24292f;
+  background: #21262d;
+  border-color: var(--border-strong);
 }
 
 .buttonGithub:hover {
-  background: #1b1f23;
+  background: #2a313a;
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+}
+
+.footnote {
+  margin: 1.5rem 0 0 !important;
+  color: var(--text-subtle) !important;
+  font-size: 0.78rem !important;
 }
