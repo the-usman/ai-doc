@@ -47,6 +47,17 @@ export const APP_REGISTRY: PlatformApp[] = [
     ],
   },
   {
+    key: "agents",
+    name: "Agents",
+    icon: "🤖",
+    rootPath: "/agents",
+    subNav: [
+      { path: "", label: "Pipeline" },
+      { path: "history", label: "Run History" },
+      { path: "configuration", label: "Configuration" },
+    ],
+  },
+  {
     key: "docs",
     name: "Docs",
     icon: "📚",

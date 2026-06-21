@@ -70,3 +70,27 @@ def recent_signins(limit: int = 5) -> list[dict[str, Any]]:
         }
         for r in rows
     ]
+
+
+def provider_breakdown() -> dict[str, int]:
+    """
+    Count registered users grouped by OAuth provider.
+
+    Returns:
+        A mapping of provider key (e.g. ``google``, ``github``) to user count.
+
+    Side effects:
+        Executes a read-only grouped ``SELECT`` against PostgreSQL.
+    """
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT provider, COUNT(*) AS count
+                FROM users
+                GROUP BY provider
+                ORDER BY provider
+                """
+            )
+            rows = cur.fetchall()
+    return {r["provider"]: int(r["count"]) for r in rows}

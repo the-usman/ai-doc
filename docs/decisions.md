@@ -74,4 +74,34 @@ Central `appRegistry.ts`; shell owns SSO and top-level navigation; apps own sub-
 
 ---
 
+## ADR-005 — LangChain chat architecture
+
+**Date:** 2026-06-16  
+**Status:** Accepted  
+**Full text:** [docs/adr/005-langchain.md](adr/005-langchain.md)
+
+LCEL chain with structured output; bound database tools; sliding-window memory keyed by session; served via LangServe; tools also exposed over MCP.
+
+---
+
+## ADR-006 — LangGraph agent state design
+
+**Date:** 2026-06-16  
+**Status:** Accepted  
+**Full text:** [docs/adr/006-agent-state-design.md](adr/006-agent-state-design.md)
+
+Five-field `PipelineState` TypedDict; `worker_results` uses an additive reducer so workers append rather than overwrite; field-by-field reasoning recorded.
+
+---
+
+## ADR-007 — Supervisor routing and worker responsibilities
+
+**Date:** 2026-06-16  
+**Status:** Accepted  
+**Full text:** [docs/adr/007-supervisor-workers.md](adr/007-supervisor-workers.md)
+
+Supervisor is an LCEL chain emitting a structured `RouteDecision`; DataAgent (ReAct + DB tools) gathers, ReportAgent (tool-free) synthesises; conditional edge routes on `state["next"]` with a `MAX_WORKER_STEPS` safety cap.
+
+---
+
 *Add new ADRs below this line as the project progresses. Each phase requires at least one new ADR. By Phase 5, the ADR log should contain a minimum of ten records covering all major decisions across the system.*

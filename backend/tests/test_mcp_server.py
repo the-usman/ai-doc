@@ -37,7 +37,11 @@ def test_manifest_lists_both_tools() -> None:
     response = mcp_client.get("/mcp/tools")
     assert response.status_code == 200
     names = {t["name"] for t in response.json()["tools"]}
-    assert names == {"get_platform_user_count", "get_recent_signins"}
+    assert names == {
+        "get_platform_user_count",
+        "get_recent_signins",
+        "get_user_provider_breakdown",
+    }
     for tool in response.json()["tools"]:
         assert "input_schema" in tool
 

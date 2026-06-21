@@ -52,3 +52,12 @@ def test_recent_signins_clamps_limit() -> None:
     _seed_user_with_session()
     rows = queries.recent_signins(limit=10_000)
     assert len(rows) <= 50
+
+
+def test_provider_breakdown_groups_by_provider() -> None:
+    """provider_breakdown returns per-provider counts summing to the total."""
+    _seed_user_with_session()
+    breakdown = queries.provider_breakdown()
+    assert breakdown, "expected at least one provider group"
+    assert set(breakdown).issubset({"google", "github"})
+    assert sum(breakdown.values()) == queries.count_platform_users()

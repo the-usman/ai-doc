@@ -35,7 +35,11 @@ def _seed_user_with_session() -> None:
 def test_tools_have_descriptive_names() -> None:
     """Tool names match what the chain and MCP server reference."""
     names = {t.name for t in tools.TOOLS}
-    assert names == {"get_platform_user_count", "get_recent_signins"}
+    assert names == {
+        "get_platform_user_count",
+        "get_recent_signins",
+        "get_user_provider_breakdown",
+    }
 
 
 def test_get_platform_user_count_tool_queries_db() -> None:

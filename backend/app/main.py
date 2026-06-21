@@ -89,6 +89,32 @@ def _register_chat() -> bool:
 CHAT_ENABLED = _register_chat()
 
 
+def _register_agents() -> bool:
+    """
+    Wire up the Phase 3 agents application if its dependencies are installed.
+
+    Like the chat extras, LangGraph is an optional heavy dependency; guarding the
+    import keeps the rest of the API serving when it is absent.
+
+    Returns:
+        True if the agents routes were registered.
+
+    Side effects:
+        Includes the agents router on the app.
+    """
+    try:
+        from app.agents.routes import router as agents_router
+
+        app.include_router(agents_router)
+        return True
+    except Exception as exc:  # pragma: no cover - optional dependency path
+        logging.getLogger(__name__).warning("Agents application unavailable: %s", exc)
+        return False
+
+
+AGENTS_ENABLED = _register_agents()
+
+
 @app.get("/health")
 @app.get("/api/health")
 def health() -> dict[str, str]:

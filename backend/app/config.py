@@ -46,6 +46,13 @@ class Settings(BaseSettings):
     )
     mcp_url: str = "http://localhost:8001"
 
+    # Phase 3 — LangGraph agents
+    agents_model: str = "claude-opus-4-8"
+    agents_max_tokens: int = 2048
+    # Shared secret required on the n8n trigger endpoint. When empty the trigger
+    # endpoint is disabled (returns 503) so it is never unintentionally open.
+    agents_trigger_token: str = ""
+
     @property
     def dsn(self) -> str:
         """
