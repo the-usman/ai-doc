@@ -81,6 +81,68 @@ export async function sendChatMessage(message: string): Promise<ChatResponse> {
   return response.json() as Promise<ChatResponse>;
 }
 
+export type PipelineStatus = "running" | "completed" | "failed";
+
+export interface WorkerResult {
+  worker: string;
+  output: string;
+}
+
+export interface PipelineRun {
+  id: string;
+  user_id: string;
+  task: string;
+  status: PipelineStatus;
+  final_output: string | null;
+  trace: WorkerResult[];
+  started_at: string | null;
+  completed_at: string | null;
+}
+
+/**
+ * Start an agent pipeline run for the signed-in user and return the completed run.
+ *
+ * @param task - The task description for the supervisor/worker pipeline
+ * @returns The persisted run, including its final output and worker trace
+ * @throws Error with the server detail when the request is not OK
+ */
+export async function runAgentPipeline(task: string): Promise<PipelineRun> {
+  const response = await fetch("/api/agents/run", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ task }),
+  });
+  if (!response.ok) {
+    let detail = "The agent pipeline is unavailable right now.";
+    try {
+      const body = (await response.json()) as { detail?: string };
+      if (body.detail) {
+        detail = body.detail;
+      }
+    } catch {
+      // ignore non-JSON error bodies
+    }
+    throw new Error(detail);
+  }
+  return response.json() as Promise<PipelineRun>;
+}
+
+/**
+ * Fetch recent agent pipeline runs for the Run History page, newest first.
+ *
+ * @returns The list of recent runs
+ * @throws Error when the response is not OK
+ */
+export async function fetchAgentRuns(): Promise<PipelineRun[]> {
+  const response = await fetch("/api/agents/runs", { credentials: "include" });
+  if (!response.ok) {
+    throw new Error("Could not load run history.");
+  }
+  const data = (await response.json()) as { runs: PipelineRun[] };
+  return data.runs;
+}
+
 /**
  * Load which OAuth providers are configured on the server.
  *

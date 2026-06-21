@@ -37,11 +37,24 @@ def get_recent_signins(limit: int = 5) -> list[dict]:
     return queries.recent_signins(limit)
 
 
+@tool
+def get_user_provider_breakdown() -> dict:
+    """Return a breakdown of registered users by OAuth provider.
+
+    Queries the ``users`` table and returns a mapping of provider (e.g.
+    ``google``, ``github``) to the number of users who signed up with it. Use
+    this when the user asks how the user base splits across login providers, or
+    how many users use a particular provider.
+    """
+    return queries.provider_breakdown()
+
+
 # All tools bound to the chat model, plus a name->callable map used by the
 # tool-execution loop in ``chain.py`` and by the MCP server.
-TOOLS = [get_platform_user_count, get_recent_signins]
+TOOLS = [get_platform_user_count, get_recent_signins, get_user_provider_breakdown]
 
 TOOL_FUNCTIONS = {
     "get_platform_user_count": queries.count_platform_users,
     "get_recent_signins": queries.recent_signins,
+    "get_user_provider_breakdown": queries.provider_breakdown,
 }

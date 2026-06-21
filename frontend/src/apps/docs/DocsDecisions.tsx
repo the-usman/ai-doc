@@ -30,6 +30,18 @@ export function DocsDecisions() {
       summary:
         "LCEL chain with structured output; bound database tools; sliding-window memory keyed by session; served via LangServe; tools also exposed over MCP.",
     },
+    {
+      id: "ADR-006",
+      title: "LangGraph agent state design",
+      summary:
+        "Five-field PipelineState TypedDict; worker_results uses an additive reducer so workers append rather than overwrite; field-by-field reasoning recorded.",
+    },
+    {
+      id: "ADR-007",
+      title: "Supervisor routing and worker responsibilities",
+      summary:
+        "Supervisor is an LCEL chain emitting a structured RouteDecision; DataAgent (ReAct + DB tools) gathers, ReportAgent (tool-free) synthesises; conditional edge routes on state.next with a step-count safety cap.",
+    },
   ];
 
   return (

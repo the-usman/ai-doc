@@ -7,6 +7,9 @@ import { HomeSettings } from "./apps/home/HomeSettings";
 import { ChatConversation } from "./apps/chat/ChatConversation";
 import { ChatHistory } from "./apps/chat/ChatHistory";
 import { ChatSettings } from "./apps/chat/ChatSettings";
+import { AgentsPipeline } from "./apps/agents/AgentsPipeline";
+import { AgentsRunHistory } from "./apps/agents/AgentsRunHistory";
+import { AgentsConfiguration } from "./apps/agents/AgentsConfiguration";
 import { DocsApiReference } from "./apps/docs/DocsApiReference";
 import { DocsArchitecture } from "./apps/docs/DocsArchitecture";
 import { DocsDecisions } from "./apps/docs/DocsDecisions";
@@ -58,6 +61,9 @@ export default function App() {
         <Route path="chat" element={<ChatConversation />} />
         <Route path="chat/history" element={<ChatHistory />} />
         <Route path="chat/settings" element={<ChatSettings />} />
+        <Route path="agents" element={<AgentsPipeline />} />
+        <Route path="agents/history" element={<AgentsRunHistory />} />
+        <Route path="agents/configuration" element={<AgentsConfiguration />} />
         <Route path="docs" element={<DocsArchitecture />} />
         <Route path="docs/decisions" element={<DocsDecisions />} />
         <Route path="docs/runbook" element={<DocsRunbook />} />

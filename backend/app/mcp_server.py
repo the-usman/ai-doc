@@ -53,12 +53,22 @@ TOOL_MANIFEST: list[dict[str, Any]] = [
             "required": [],
         },
     },
+    {
+        "name": "get_user_provider_breakdown",
+        "description": "Count registered users grouped by OAuth provider.",
+        "input_schema": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+        },
+    },
 ]
 
 # Maps a tool name to the plain query function that backs it.
 _DISPATCH = {
     "get_platform_user_count": lambda args: queries.count_platform_users(),
     "get_recent_signins": lambda args: queries.recent_signins(int(args.get("limit", 5))),
+    "get_user_provider_breakdown": lambda args: queries.provider_breakdown(),
 }
 
 

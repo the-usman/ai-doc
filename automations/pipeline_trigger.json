@@ -1,0 +1,160 @@
+{
+  "name": "AI-Doc — Daily Agent Pipeline Trigger",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "triggerAtHour": 7,
+              "triggerAtMinute": 0
+            }
+          ]
+        }
+      },
+      "id": "b1f7c2a0-0001-4a10-9a01-000000000001",
+      "name": "Every day at 07:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        400,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a0000000-0000-0000-0000-000000000010",
+              "name": "task",
+              "value": "Summarise the platform's current user count, the breakdown by OAuth provider, and recent sign-in activity.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b1f7c2a0-0002-4a10-9a01-000000000002",
+      "name": "Build task",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        640,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.AI_DOC_API_URL }}/api/agents/trigger",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Trigger-Token",
+              "value": "={{ $env.AGENTS_TRIGGER_TOKEN }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"task\": $json.task } }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "b1f7c2a0-0003-4a10-9a01-000000000003",
+      "name": "Start pipeline run",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a0000000-0000-0000-0000-000000000020",
+              "name": "run_id",
+              "value": "={{ $json.run_id }}",
+              "type": "string"
+            },
+            {
+              "id": "a0000000-0000-0000-0000-000000000021",
+              "name": "status",
+              "value": "={{ $json.status }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b1f7c2a0-0004-4a10-9a01-000000000004",
+      "name": "Log response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1120,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Every day at 07:00": {
+      "main": [
+        [
+          {
+            "node": "Build task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build task": {
+      "main": [
+        [
+          {
+            "node": "Start pipeline run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start pipeline run": {
+      "main": [
+        [
+          {
+            "node": "Log response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false,
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": [
+    {
+      "name": "ai-doc"
+    }
+  ]
+}

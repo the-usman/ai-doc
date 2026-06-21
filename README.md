@@ -41,11 +41,17 @@ Use `docker/docker-compose.prod.yml` in Dokploy with secrets from the panel. Bui
 - ADRs: `docs/adr/`
 - In-app Docs application: Architecture, Decisions, Runbook
 
-## Platform applications (Phase 1)
+## Platform applications
 
-| App  | Path    | Sub-pages                          |
-|------|---------|------------------------------------|
-| Home | `/`     | Overview, Settings               |
-| Docs | `/docs` | Architecture, Decisions, Runbook, API Reference |
+| App    | Path      | Sub-pages                                         | Phase |
+|--------|-----------|---------------------------------------------------|-------|
+| Home   | `/`       | Overview, Settings                                | 1     |
+| Chat   | `/chat`   | Conversation, History, Settings                   | 2     |
+| Agents | `/agents` | Pipeline, Run History, Configuration              | 3     |
+| Docs   | `/docs`   | Architecture, Decisions, Runbook, API Reference   | 1     |
 
 Register new apps in `frontend/src/platform/appRegistry.ts`.
+
+The Agents application runs a LangGraph supervisor/worker pipeline. It can be
+driven from the Pipeline page or autonomously by n8n — import
+`automations/pipeline_trigger.json` and see `automations/README.md`.
