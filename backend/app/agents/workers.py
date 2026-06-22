@@ -42,7 +42,10 @@ def get_data_agent() -> Any:
     """
     from langgraph.prebuilt import create_react_agent
 
-    return create_react_agent(get_chat_model(), TOOLS, prompt=_DATA_AGENT_PROMPT)
+    # langgraph 0.2.x uses ``state_modifier`` for the system prompt; the ``prompt``
+    # keyword was only introduced in 0.3.0. A plain string is accepted here and
+    # applied as the agent's system message.
+    return create_react_agent(get_chat_model(), TOOLS, state_modifier=_DATA_AGENT_PROMPT)
 
 
 def get_report_chain() -> Any:
