@@ -139,17 +139,35 @@ export function RunTrace({ run }: { run: PipelineRun }) {
         {run.trace.length === 0 && (
           <li className={styles.muted}>No worker steps were recorded.</li>
         )}
-        {run.trace.map((step: WorkerResult, index: number) => (
-          <li key={index} className={styles.step}>
-            <span className={styles.stepIcon} aria-hidden="true">
-              {WORKER_ICONS[step.worker] ?? "⚙️"}
-            </span>
-            <div className={styles.stepBody}>
-              <p className={styles.stepWorker}>{step.worker}</p>
-              <p className={styles.stepOutput}>{step.output}</p>
-            </div>
-          </li>
-        ))}
+        {run.trace.map((step: WorkerResult, index: number) => {
+          // Failed runs store an error item ({ error }) rather than a worker
+          // result ({ worker, output }); render it so failures are diagnosable.
+          const errorText = (step as { error?: string }).error;
+          if (errorText) {
+            return (
+              <li key={index} className={`${styles.step} ${styles.stepError}`}>
+                <span className={styles.stepIcon} aria-hidden="true">
+                  ⚠️
+                </span>
+                <div className={styles.stepBody}>
+                  <p className={styles.stepWorker}>Pipeline error</p>
+                  <p className={styles.stepOutput}>{errorText}</p>
+                </div>
+              </li>
+            );
+          }
+          return (
+            <li key={index} className={styles.step}>
+              <span className={styles.stepIcon} aria-hidden="true">
+                {WORKER_ICONS[step.worker] ?? "⚙️"}
+              </span>
+              <div className={styles.stepBody}>
+                <p className={styles.stepWorker}>{step.worker}</p>
+                <p className={styles.stepOutput}>{step.output}</p>
+              </div>
+            </li>
+          );
+        })}
       </ol>
 
       {run.final_output && (

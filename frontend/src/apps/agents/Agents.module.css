@@ -137,6 +137,15 @@
   }
 }
 
+.stepError {
+  border-color: var(--danger, #d4423a);
+  background: color-mix(in srgb, var(--danger, #d4423a) 8%, var(--bg-elevated));
+}
+
+.stepError .stepOutput {
+  color: var(--danger, #d4423a);
+}
+
 .stepIcon {
   font-size: 1.1rem;
   line-height: 1.5;
