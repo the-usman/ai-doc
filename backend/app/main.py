@@ -115,6 +115,33 @@ def _register_agents() -> bool:
 AGENTS_ENABLED = _register_agents()
 
 
+def _register_knowledge() -> bool:
+    """
+    Wire up the Phase 4 Knowledge (RAG) application if its dependencies are present.
+
+    The RAG stack (embeddings, text splitter, pgvector, PDF extraction) is an
+    optional heavy dependency set; guarding the import keeps the rest of the API
+    serving when it is absent.
+
+    Returns:
+        True if the knowledge routes were registered.
+
+    Side effects:
+        Includes the knowledge router on the app.
+    """
+    try:
+        from app.knowledge.routes import router as knowledge_router
+
+        app.include_router(knowledge_router)
+        return True
+    except Exception as exc:  # pragma: no cover - optional dependency path
+        logging.getLogger(__name__).warning("Knowledge application unavailable: %s", exc)
+        return False
+
+
+KNOWLEDGE_ENABLED = _register_knowledge()
+
+
 @app.get("/health")
 @app.get("/api/health")
 def health() -> dict[str, str]:

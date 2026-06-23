@@ -104,4 +104,44 @@ Supervisor is an LCEL chain emitting a structured `RouteDecision`; DataAgent (Re
 
 ---
 
+## ADR-008 — Embedding model, dimension, and vector storage
+
+**Date:** 2026-06-23  
+**Status:** Accepted  
+**Full text:** [docs/adr/008-embedding-model.md](adr/008-embedding-model.md)
+
+OpenAI `text-embedding-3-small` at 1536 dimensions to match the locked `VECTOR(1536)` column; embeddings stored directly in the existing `document_chunks` table via pgvector (no separate vector store), with a thin `BaseRetriever` wrapper for LCEL.
+
+---
+
+## ADR-009 — Document extraction and chunking strategy
+
+**Date:** 2026-06-23  
+**Status:** Accepted  
+**Full text:** [docs/adr/009-chunking-pdf.md](adr/009-chunking-pdf.md)
+
+`pypdf` for PDF text extraction (dependency-light, no OCR); `RecursiveCharacterTextSplitter.from_tiktoken_encoder` at 512 tokens / 64 overlap, sized in the embedding model's own token units.
+
+---
+
+## ADR-010 — RAG chain and the no-hallucination contract
+
+**Date:** 2026-06-23  
+**Status:** Accepted  
+**Full text:** [docs/adr/010-rag-system-prompt.md](adr/010-rag-system-prompt.md)
+
+Pure-LCEL retriever→prompt→structured-output chain governed by a strict context-only system prompt that forbids outside knowledge, mandates document-title citations, and returns a typed "not found" signal; source chunks returned to the client for visible grounding.
+
+---
+
+## ADR-011 — Redis-backed conversation memory and per-application scope
+
+**Date:** 2026-06-23  
+**Status:** Accepted  
+**Full text:** [docs/adr/011-redis-memory-scope.md](adr/011-redis-memory-scope.md)
+
+`RedisChatMessageHistory` behind a shared `app/memory.py` that namespaces keys by application scope (`chat`, `knowledge`) with a graceful in-process fallback; `chat/memory.py` refactored to a thin adapter.
+
+---
+
 *Add new ADRs below this line as the project progresses. Each phase requires at least one new ADR. By Phase 5, the ADR log should contain a minimum of ten records covering all major decisions across the system.*

@@ -24,8 +24,10 @@ MAX_WORKER_STEPS = 6
 _SUPERVISOR_PROMPT = (
     "You are the supervisor of a small team of agents working on one task.\n"
     "Workers available:\n"
-    "- DataAgent: answers questions about platform users and sign-in activity "
-    "using database tools.\n"
+    "- DataAgent: answers questions using tools. It can query the database for "
+    "structured facts (user counts, sign-in activity) AND search the uploaded "
+    "knowledge base for passages from documents (notes, specs, reports, PDFs). "
+    "Route here for any task needing platform data or document content.\n"
     "- ReportAgent: synthesises the gathered results into a brief written "
     "summary.\n\n"
     "Read the task and the results gathered so far, then decide the single next "

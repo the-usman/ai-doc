@@ -10,6 +10,9 @@ import { ChatSettings } from "./apps/chat/ChatSettings";
 import { AgentsPipeline } from "./apps/agents/AgentsPipeline";
 import { AgentsRunHistory } from "./apps/agents/AgentsRunHistory";
 import { AgentsConfiguration } from "./apps/agents/AgentsConfiguration";
+import { KnowledgeDocuments } from "./apps/knowledge/KnowledgeDocuments";
+import { KnowledgeChat } from "./apps/knowledge/KnowledgeChat";
+import { KnowledgeExplore } from "./apps/knowledge/KnowledgeExplore";
 import { DocsApiReference } from "./apps/docs/DocsApiReference";
 import { DocsArchitecture } from "./apps/docs/DocsArchitecture";
 import { DocsDecisions } from "./apps/docs/DocsDecisions";
@@ -64,6 +67,9 @@ export default function App() {
         <Route path="agents" element={<AgentsPipeline />} />
         <Route path="agents/history" element={<AgentsRunHistory />} />
         <Route path="agents/configuration" element={<AgentsConfiguration />} />
+        <Route path="knowledge" element={<KnowledgeDocuments />} />
+        <Route path="knowledge/chat" element={<KnowledgeChat />} />
+        <Route path="knowledge/explore" element={<KnowledgeExplore />} />
         <Route path="docs" element={<DocsArchitecture />} />
         <Route path="docs/decisions" element={<DocsDecisions />} />
         <Route path="docs/runbook" element={<DocsRunbook />} />

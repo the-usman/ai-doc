@@ -19,11 +19,18 @@ from langchain_core.prompts import ChatPromptTemplate
 from app.agents.llm import get_chat_model
 from app.agents.state import PipelineState
 from app.chat.tools import TOOLS
+from app.knowledge.tools import KNOWLEDGE_TOOLS
+
+# Phase 4: the DataAgent gains a knowledge-base retrieval tool, so it can answer
+# from uploaded documents as well as the structured database. See ADR-007/Phase 4.
+DATA_AGENT_TOOLS = [*TOOLS, *KNOWLEDGE_TOOLS]
 
 _DATA_AGENT_PROMPT = (
-    "You are DataAgent. Answer questions about the platform's users and sign-in "
-    "activity using the available tools. Always call a tool to get real data "
-    "rather than guessing, then state the answer plainly."
+    "You are DataAgent. Answer questions about the platform using the available "
+    "tools. For structured facts — user counts, sign-in activity — use the "
+    "database tools. For questions about the content of uploaded documents, use "
+    "search_knowledge_base to retrieve relevant passages. Always call a tool to "
+    "get real data rather than guessing, then state the answer plainly."
 )
 
 _REPORT_SYSTEM_PROMPT = (
@@ -45,7 +52,9 @@ def get_data_agent() -> Any:
     # langgraph 0.2.x uses ``state_modifier`` for the system prompt; the ``prompt``
     # keyword was only introduced in 0.3.0. A plain string is accepted here and
     # applied as the agent's system message.
-    return create_react_agent(get_chat_model(), TOOLS, state_modifier=_DATA_AGENT_PROMPT)
+    return create_react_agent(
+        get_chat_model(), DATA_AGENT_TOOLS, state_modifier=_DATA_AGENT_PROMPT
+    )
 
 
 def get_report_chain() -> Any:

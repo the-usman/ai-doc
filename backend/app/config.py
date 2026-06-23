@@ -53,6 +53,32 @@ class Settings(BaseSettings):
     # endpoint is disabled (returns 503) so it is never unintentionally open.
     agents_trigger_token: str = ""
 
+    # Phase 4 — Knowledge (RAG)
+    # OpenAI is used only for embeddings; the chat/answer model stays Anthropic.
+    openai_api_key: str = ""
+    # Must match the VECTOR(1536) column in schema.sql. Changing the model means
+    # changing the dimension, which requires re-indexing every document. See ADR-008.
+    embedding_model: str = "text-embedding-3-small"
+    embedding_dimension: int = 1536
+    # RecursiveCharacterTextSplitter parameters (tokens). See ADR-009.
+    chunk_size: int = 512
+    chunk_overlap: int = 64
+    # Number of chunks the retriever returns for each query. See ADR-010.
+    rag_top_k: int = 5
+    rag_system_prompt: str = (
+        "You are AI-Doc's knowledge assistant. Answer the user's question using "
+        "ONLY the context passages provided below. Each passage is labelled with "
+        "the document title it came from. When you use information from a passage, "
+        "cite the document title in parentheses, e.g. (Onboarding Guide). If the "
+        "answer is not contained in the provided context, say plainly that you "
+        "could not find it in the uploaded documents — do not use outside "
+        "knowledge and do not invent an answer."
+    )
+    # Redis connection for persistent conversation memory (Phase 4, Step 6).
+    redis_url: str = "redis://localhost:6379"
+    # Window of recent turns kept in conversation memory.
+    memory_window_turns: int = 10
+
     @property
     def dsn(self) -> str:
         """

@@ -42,6 +42,30 @@ export function DocsDecisions() {
       summary:
         "Supervisor is an LCEL chain emitting a structured RouteDecision; DataAgent (ReAct + DB tools) gathers, ReportAgent (tool-free) synthesises; conditional edge routes on state.next with a step-count safety cap.",
     },
+    {
+      id: "ADR-008",
+      title: "Embedding model, dimension, and vector storage",
+      summary:
+        "OpenAI text-embedding-3-small at 1536 dims to match the locked VECTOR(1536) column; embeddings stored in the existing document_chunks table via pgvector with a thin BaseRetriever wrapper for LCEL.",
+    },
+    {
+      id: "ADR-009",
+      title: "Document extraction and chunking strategy",
+      summary:
+        "pypdf for PDF extraction (dependency-light, no OCR); RecursiveCharacterTextSplitter.from_tiktoken_encoder at 512 tokens / 64 overlap, sized in the embedding model's token units.",
+    },
+    {
+      id: "ADR-010",
+      title: "RAG chain and the no-hallucination contract",
+      summary:
+        "Pure-LCEL retriever→prompt→structured-output chain with a strict context-only system prompt: forbids outside knowledge, mandates title citations, returns a typed 'not found' signal; source chunks returned for visible grounding.",
+    },
+    {
+      id: "ADR-011",
+      title: "Redis-backed memory and per-application scope",
+      summary:
+        "RedisChatMessageHistory behind a shared app/memory.py that namespaces keys by application scope (chat, knowledge) with a graceful in-process fallback; chat/memory.py refactored to a thin adapter.",
+    },
   ];
 
   return (

@@ -143,6 +143,163 @@ export async function fetchAgentRuns(): Promise<PipelineRun[]> {
   return data.runs;
 }
 
+export interface KnowledgeDocument {
+  id: string;
+  title: string;
+  source_name: string;
+  chunk_count: number;
+  created_at: string | null;
+}
+
+export interface SourceChunk {
+  document_id: string;
+  document_title: string;
+  chunk_index: number;
+  similarity: number;
+  snippet: string;
+}
+
+export interface KnowledgeAnswer {
+  answer: string;
+  answer_found: boolean;
+  sources: SourceChunk[];
+}
+
+export interface SearchResult {
+  document_id: string;
+  document_title: string;
+  chunk_index: number;
+  similarity: number;
+  text: string;
+}
+
+/**
+ * Fetch the signed-in user's uploaded knowledge documents, newest first.
+ *
+ * @returns The list of documents
+ * @throws Error when the response is not OK
+ */
+export async function fetchDocuments(): Promise<KnowledgeDocument[]> {
+  const response = await fetch("/api/knowledge/documents", {
+    credentials: "include",
+  });
+  if (!response.ok) {
+    throw new Error("Could not load documents.");
+  }
+  const data = (await response.json()) as { documents: KnowledgeDocument[] };
+  return data.documents;
+}
+
+/**
+ * Upload a document for ingestion (extract, chunk, embed, index).
+ *
+ * @param file - The file to upload (.txt, .md or .pdf)
+ * @param title - Human-readable title for the document
+ * @returns The created document summary
+ * @throws Error with the server detail when the request is not OK
+ */
+export async function uploadDocument(
+  file: File,
+  title: string,
+): Promise<KnowledgeDocument> {
+  const form = new FormData();
+  form.append("file", file);
+  form.append("title", title);
+  const response = await fetch("/api/knowledge/documents", {
+    method: "POST",
+    credentials: "include",
+    body: form,
+  });
+  if (!response.ok) {
+    let detail = "Upload failed.";
+    try {
+      const body = (await response.json()) as { detail?: string };
+      if (body.detail) {
+        detail = body.detail;
+      }
+    } catch {
+      // ignore non-JSON error bodies
+    }
+    throw new Error(detail);
+  }
+  return response.json() as Promise<KnowledgeDocument>;
+}
+
+/**
+ * Delete one of the caller's documents and its indexed chunks.
+ *
+ * @param documentId - The document id to delete
+ * @throws Error when the response is not OK
+ */
+export async function deleteDocument(documentId: string): Promise<void> {
+  const response = await fetch(`/api/knowledge/documents/${documentId}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  if (!response.ok) {
+    throw new Error("Could not delete the document.");
+  }
+}
+
+/**
+ * Ask a question over the knowledge base; returns a grounded answer and sources.
+ *
+ * @param question - The user's question
+ * @returns The answer plus the source chunks used to ground it
+ * @throws Error with the server detail when the request is not OK
+ */
+export async function askKnowledge(question: string): Promise<KnowledgeAnswer> {
+  const response = await fetch("/api/knowledge/chat", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ question }),
+  });
+  if (!response.ok) {
+    let detail = "The knowledge assistant is unavailable right now.";
+    try {
+      const body = (await response.json()) as { detail?: string };
+      if (body.detail) {
+        detail = body.detail;
+      }
+    } catch {
+      // ignore non-JSON error bodies
+    }
+    throw new Error(detail);
+  }
+  return response.json() as Promise<KnowledgeAnswer>;
+}
+
+/**
+ * Run a raw retrieval against the knowledge base (Explore page).
+ *
+ * @param query - The search query
+ * @returns The matching chunks with similarity scores
+ * @throws Error with the server detail when the request is not OK
+ */
+export async function searchKnowledge(query: string): Promise<SearchResult[]> {
+  const response = await fetch("/api/knowledge/search", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query }),
+  });
+  if (!response.ok) {
+    let detail = "Search is unavailable right now.";
+    try {
+      const body = (await response.json()) as { detail?: string };
+      if (body.detail) {
+        detail = body.detail;
+      }
+    } catch {
+      // ignore non-JSON error bodies
+    }
+    throw new Error(detail);
+  }
+  const data = (await response.json()) as { results: SearchResult[] };
+  return data.results;
+}
+
 /**
  * Load which OAuth providers are configured on the server.
  *
