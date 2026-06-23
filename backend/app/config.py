@@ -37,6 +37,9 @@ class Settings(BaseSettings):
     anthropic_api_key: str = ""
     chat_model: str = "claude-opus-4-8"
     chat_max_tokens: int = 4096
+    # Retries for transient Anthropic errors (e.g. HTTP 529 "Overloaded"); the
+    # SDK backs off exponentially between attempts.
+    anthropic_max_retries: int = 5
     chat_system_prompt: str = (
         "You are AI-Doc's assistant, embedded in a developer platform. "
         "Answer questions about the platform clearly and concisely. "

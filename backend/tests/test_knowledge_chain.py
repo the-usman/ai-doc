@@ -137,6 +137,35 @@ def test_answer_question_tolerates_braces_in_history_and_context(monkeypatch) ->
     assert response.answer == "The chunk size is 512."
 
 
+def test_is_overloaded_error_detects_529() -> None:
+    """Overload is recognised by status code or message text."""
+
+    class _Overloaded(Exception):
+        status_code = 529
+
+    assert chain._is_overloaded_error(_Overloaded())
+    assert chain._is_overloaded_error(Exception("Error code: 529 - Overloaded"))
+    assert not chain._is_overloaded_error(ValueError("bad request"))
+
+
+def test_answer_question_maps_overload_to_runtimeerror(patched_chain, monkeypatch) -> None:
+    """A sustained overload becomes a RuntimeError (→ 503) with a clear message."""
+
+    class _OverloadedModel:
+        def with_structured_output(self, _schema):
+            from langchain_core.runnables import RunnableLambda
+
+            def _raise(_payload):
+                raise RuntimeError("Error code: 529 - Overloaded")
+
+            return RunnableLambda(_raise)
+
+    monkeypatch.setattr(chain, "get_chat_model", lambda: _OverloadedModel())
+
+    with pytest.raises(RuntimeError, match="overloaded"):
+        chain.answer_question(str(uuid4()), "any question")
+
+
 def test_answer_question_drops_sources_when_not_found(patched_chain, monkeypatch) -> None:
     """When the answer is not in the context, no sources are returned."""
     answer = KnowledgeAnswer(

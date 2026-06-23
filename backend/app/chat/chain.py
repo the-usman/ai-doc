@@ -63,6 +63,9 @@ def get_chat_model() -> Any:
         model=settings.chat_model,
         api_key=settings.anthropic_api_key,
         max_tokens=settings.chat_max_tokens,
+        # Retry transient server errors (notably HTTP 529 "Overloaded") with the
+        # SDK's exponential backoff instead of surfacing them to the user.
+        max_retries=settings.anthropic_max_retries,
     )
 
 

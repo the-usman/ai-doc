@@ -27,6 +27,26 @@ SCOPE = "knowledge"
 _SNIPPET_CHARS = 240
 
 
+def _is_overloaded_error(exc: Exception) -> bool:
+    """
+    Report whether an exception is a transient Anthropic "overloaded" error.
+
+    Covers HTTP 529 (and the SDK's overloaded error type) so the chain can map a
+    sustained overload to a friendly, retryable response.
+
+    Args:
+        exc: The exception raised by the model call.
+
+    Returns:
+        True if the error looks like an Anthropic overload/529.
+    """
+    status = getattr(exc, "status_code", None)
+    if status == 529:
+        return True
+    text = f"{type(exc).__name__} {exc}".lower()
+    return "overloaded" in text or "529" in text
+
+
 def _format_context(docs: list) -> str:
     """
     Render retrieved documents as labelled context for the prompt.
@@ -119,13 +139,23 @@ def answer_question(
         ]
     )
     model = get_chat_model().with_structured_output(KnowledgeAnswer)
-    result: KnowledgeAnswer | None = (prompt | model).invoke(
-        {
-            "history": get_history(SCOPE, session_id),
-            "context": context,
-            "question": question,
-        }
-    )
+    try:
+        result: KnowledgeAnswer | None = (prompt | model).invoke(
+            {
+                "history": get_history(SCOPE, session_id),
+                "context": context,
+                "question": question,
+            }
+        )
+    except Exception as exc:  # noqa: BLE001 - narrowed below
+        # If the answer model is still overloaded after the SDK's retries, give a
+        # clear, retryable message (503) rather than a generic backend error.
+        if _is_overloaded_error(exc):
+            raise RuntimeError(
+                "The answer model is busy right now (overloaded). "
+                "Please try again in a few seconds."
+            ) from exc
+        raise
 
     # with_structured_output can return None if the model emits no structured
     # call; treat that as "not found" rather than crashing on result.answer.
