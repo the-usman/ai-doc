@@ -190,9 +190,12 @@ def knowledge_chat(request: Request, payload: QuestionRequest) -> dict[str, Any]
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     except HTTPException:
         raise
-    except Exception as exc:  # pragma: no cover - defensive backend guard
+    except Exception as exc:  # surface the exact error to aid debugging
         logger.exception("Knowledge backend error")
-        raise HTTPException(status_code=502, detail="Knowledge backend error") from exc
+        raise HTTPException(
+            status_code=502,
+            detail=f"Knowledge backend error: {type(exc).__name__}: {exc}",
+        ) from exc
     return response.model_dump()
 
 
@@ -216,6 +219,12 @@ def knowledge_search(request: Request, payload: SearchRequest) -> dict[str, Any]
         rows = retriever.search_chunks(payload.query, user_id=session["user_id"])
     except RuntimeError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except Exception as exc:  # surface the exact error to aid debugging
+        logger.exception("Knowledge search error")
+        raise HTTPException(
+            status_code=502,
+            detail=f"Knowledge search error: {type(exc).__name__}: {exc}",
+        ) from exc
     results = [
         {
             "document_id": str(row["document_id"]),

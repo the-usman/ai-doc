@@ -13,8 +13,7 @@ model stays Anthropic, reusing the chat application's model factory.
 from typing import Any
 from uuid import UUID
 
-from langchain_core.messages import BaseMessage
-from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
 from app.chat.chain import get_chat_model
 from app.config import get_settings
@@ -109,17 +108,32 @@ def answer_question(
     docs = pg_retriever.invoke(question)
     context = _format_context(docs)
 
+    # History goes in as a MessagesPlaceholder (real message objects), NOT baked
+    # into the template — otherwise any '{'/'}' in a past message or in the
+    # retrieved context would be parsed as a template variable and blow up.
     prompt = ChatPromptTemplate.from_messages(
         [
             ("system", settings.rag_system_prompt),
-            *_history_as_tuples(get_history(SCOPE, session_id)),
+            MessagesPlaceholder("history"),
             ("human", "Context:\n{context}\n\nQuestion: {question}"),
         ]
     )
     model = get_chat_model().with_structured_output(KnowledgeAnswer)
-    result: KnowledgeAnswer = (prompt | model).invoke(
-        {"context": context, "question": question}
+    result: KnowledgeAnswer | None = (prompt | model).invoke(
+        {
+            "history": get_history(SCOPE, session_id),
+            "context": context,
+            "question": question,
+        }
     )
+
+    # with_structured_output can return None if the model emits no structured
+    # call; treat that as "not found" rather than crashing on result.answer.
+    if result is None:
+        result = KnowledgeAnswer(
+            answer="I could not produce an answer from the uploaded documents.",
+            answer_found=False,
+        )
 
     sources = [
         SourceChunk(
@@ -138,13 +152,3 @@ def answer_question(
         answer_found=result.answer_found,
         sources=sources if result.answer_found else [],
     )
-
-
-def _history_as_tuples(messages: list[BaseMessage]) -> list[tuple[str, str]]:
-    """Convert stored messages into ``(role, content)`` tuples for the prompt."""
-    tuples: list[tuple[str, str]] = []
-    for message in messages:
-        role = "ai" if message.type == "ai" else "human"
-        content = message.content if isinstance(message.content, str) else str(message.content)
-        tuples.append((role, content))
-    return tuples

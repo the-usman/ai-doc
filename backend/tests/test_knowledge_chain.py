@@ -108,6 +108,35 @@ def test_answer_question_records_turn_under_knowledge_scope(patched_chain, monke
     assert patched_chain["ai"] == "An answer."
 
 
+def test_answer_question_tolerates_braces_in_history_and_context(monkeypatch) -> None:
+    """Prior messages or context containing '{'/'}' must not break the template.
+
+    Regression test: history used to be baked into the prompt as template text, so
+    a past answer containing JSON-like braces raised a template error (the 502
+    "Knowledge backend error"). History now flows in as message objects.
+    """
+    from langchain_core.messages import AIMessage, HumanMessage
+
+    docs = [_doc(text='see config {"chunk_size": 512}')]
+    monkeypatch.setattr(
+        chain.retriever, "get_retriever", lambda user_id=None: _FakeRetriever(docs)
+    )
+    monkeypatch.setattr(
+        chain,
+        "get_history",
+        lambda scope, sid: [
+            HumanMessage(content="what is the {setting}?"),
+            AIMessage(content='it is {"value": 1}'),
+        ],
+    )
+    monkeypatch.setattr(chain, "append_turn", lambda *a, **k: None)
+    answer = KnowledgeAnswer(answer="The chunk size is 512.", answer_found=True)
+    monkeypatch.setattr(chain, "get_chat_model", lambda: _ModelHolder(answer))
+
+    response = chain.answer_question(str(uuid4()), "what is the chunk size?")
+    assert response.answer == "The chunk size is 512."
+
+
 def test_answer_question_drops_sources_when_not_found(patched_chain, monkeypatch) -> None:
     """When the answer is not in the context, no sources are returned."""
     answer = KnowledgeAnswer(
